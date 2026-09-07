@@ -14,13 +14,6 @@ on:
         default: true
         type: boolean
 
-  # Bootstrap self-test only. Removed after the worker proves it can build the
-  # current public Fallpoint tree. Normal operation is workflow_dispatch only.
-  push:
-    branches: [main]
-    paths:
-      - '.github/workflows/build-fallpoint.yml'
-
 permissions:
   contents: read
 
@@ -45,7 +38,7 @@ jobs:
             echo 'private=false' >> "$GITHUB_OUTPUT"
           fi
 
-      - name: Check out public Fallpoint for worker bootstrap
+      - name: Check out public Fallpoint when no private token is configured
         if: ${{ steps.auth.outputs.private == 'false' }}
         env:
           SOURCE_REF: ${{ github.event.inputs.source_ref || 'main' }}
