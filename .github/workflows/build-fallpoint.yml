@@ -34,8 +34,19 @@ jobs:
     timeout-minutes: 45
 
     steps:
+      - name: Resolve private-repository authentication
+        id: auth
+        env:
+          FALLPOINT_TOKEN: ${{ secrets.FALLPOINT_PRIVATE_TOKEN }}
+        run: |
+          if [ -n "$FALLPOINT_TOKEN" ]; then
+            echo 'private=true' >> "$GITHUB_OUTPUT"
+          else
+            echo 'private=false' >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Check out public Fallpoint for worker bootstrap
-        if: ${{ secrets.FALLPOINT_PRIVATE_TOKEN == '' }}
+        if: ${{ steps.auth.outputs.private == 'false' }}
         env:
           SOURCE_REF: ${{ github.event.inputs.source_ref || 'main' }}
         run: |
@@ -47,7 +58,7 @@ jobs:
           printf 'Fallpoint source: %s\n' "$(git rev-parse HEAD)"
 
       - name: Check out private Fallpoint
-        if: ${{ secrets.FALLPOINT_PRIVATE_TOKEN != '' }}
+        if: ${{ steps.auth.outputs.private == 'true' }}
         uses: actions/checkout@v4
         with:
           repository: Arctic403/Fallpoint
@@ -127,7 +138,7 @@ jobs:
           sha256sum "$RUNNER_TEMP/fallpoint-output/Fallpoint-universal-debug.apk"
 
       - name: Publish completed APK back to private Fallpoint
-        if: ${{ github.event_name == 'workflow_dispatch' && inputs.publish && secrets.FALLPOINT_PRIVATE_TOKEN != '' }}
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.publish && steps.auth.outputs.private == 'true' }}
         env:
           GH_TOKEN: ${{ secrets.FALLPOINT_PRIVATE_TOKEN }}
         run: |
