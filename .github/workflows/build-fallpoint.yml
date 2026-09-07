@@ -1,6 +1,8 @@
 name: Fallpoint Private Universal Build
 
 on:
+  repository_dispatch:
+    types: [fallpoint-main-push]
   workflow_dispatch:
     inputs:
       source_ref:
@@ -14,8 +16,7 @@ on:
         default: true
         type: boolean
   schedule:
-    # Public worker watches private Fallpoint/main. GitHub scheduled workflows
-    # can be delayed slightly, but this keeps all heavy build time on the public repo.
+    # Backup watcher in case an event is ever missed.
     - cron: '*/5 * * * *'
   push:
     branches: [main]
@@ -39,7 +40,7 @@ jobs:
         id: resolve
         env:
           GH_TOKEN: ${{ secrets.FALLPOINT_PRIVATE_TOKEN }}
-          REQUESTED_REF: ${{ github.event.inputs.source_ref || 'main' }}
+          REQUESTED_REF: ${{ github.event_name == 'repository_dispatch' && github.event.client_payload.source_sha || github.event.inputs.source_ref || 'main' }}
           EVENT_NAME: ${{ github.event_name }}
         run: |
           set -euo pipefail
