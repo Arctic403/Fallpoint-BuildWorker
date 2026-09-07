@@ -1,0 +1,25 @@
+# This public repo must never contain Fallpoint source/assets.
+*.glb
+*.gltf
+*.fbx
+*.blend
+*.obj
+*.png
+*.jpg
+*.jpeg
+*.ktx
+*.ktx2
+*.dds
+*.tga
+*.zip
+*.apk
+*.aab
+*.jks
+*.keystore
+
+# Local/private staging
+fallpoint/
+private-assets/
+private_assets/
+build/
+.gradle/
